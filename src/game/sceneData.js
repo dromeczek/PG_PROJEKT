@@ -15,7 +15,7 @@ export const scene = {
     trees: [
         { position: [-0.66, 0.0, 0.70] },
         { position: [0.66, 0.0, 0.70] },
-        // Jesienne drzewo na drugim pasie trawy: wyższy pień, czerwona korona.
+        
         { position: [-0.30, 0.0, -0.70], trunkHeight: 0.50, crownColor: [0.85, 0.15, 0.10] }
     ]
 };
