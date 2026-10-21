@@ -1,6 +1,6 @@
 import { rows, scene } from './sceneData.js'; 
 export function updateCars(dt) {
- const edge = 1.25;
+ const edge = 3.0; // koniec pasa (poza ekranem) - tu auto znika i wraca z drugiej strony
  for (const car of scene.cars) {
  car.position[0] += car.speed * dt;
  if (car.speed > 0 && car.position[0] > edge) {

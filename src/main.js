@@ -4,8 +4,17 @@ import {
     createMesh, planeGeometry, cubeGeometry,
     drawRow, drawPlayer, drawCar, drawTree
 } from './webgl/index.js';
+import {
+ gameState, updateGameState, restartGame
+} from './game/gameRules.js';
+
 import { mat4 } from 'gl-matrix';
 import { updateCars, movePlayer } from './game/gameLogic.js';
+const scoreLabel = document.querySelector('#score');
+const statusLabel = document.querySelector('#status');
+const livesLabel = document.querySelector('#lives');
+const bestLabel = document.querySelector('#best');
+
 const canvas = document.querySelector('#gameCanvas');
 const gl = canvas.getContext('webgl2');
 if (!gl) throw new Error('Ta przeglądarka nie udostępnia WebGL2.');
@@ -20,10 +29,10 @@ const uniforms = {
  color: gl.getUniformLocation(program, 'uColor')
 };
 const camera = {
- eye: [0.0, 1.3, 2.4], // Gdzie stoi kamera? 
- target: [0.0, -0.15, -0.35], // Na co patrzy?
+ eye: [0.0, 2.6, 2.4], // Gdzie stoi kamera? 
+ target: [0.0, -0.45, -0.1], // Na co patrzy? (środek planszy)
  up: [0, 1, 0], // Gdzie jest góra obrazu?
- zoom: 1.8 // Zakres pokazywanego obszaru
+ zoom: 1.6 // Zakres pokazywanego obszaru (mniej = plansza większa)
 };
 // Każda geometria trafia do GPU tylko raz.
 const planeMesh = createMesh(gl, program, planeGeometry);
@@ -61,6 +70,18 @@ function render() {
     for (const car of scene.cars) drawCar(gl, cubeMesh, uniforms, car);
     for (const tree of scene.trees) drawTree(gl, cubeMesh, uniforms, tree);
 }
+function updateHud() {
+ scoreLabel.textContent = `Punkty: ${gameState.score}`;
+ livesLabel.textContent = `Życia: ${gameState.lives}`;
+ bestLabel.textContent = `Rekord: ${gameState.best}`;
+ if (gameState.status === 'lost') {
+ statusLabel.textContent = 'Kolizja! Naciśnij R.';
+ } else if (gameState.status === 'won') {
+ statusLabel.textContent = 'Meta! Naciśnij R.';
+ } else {
+ statusLabel.textContent = 'Dotrzyj do ostatniego pasa trawy.';
+ }
+}
 
 let previousTime = null;
 let paused = false; // czy ruch samochodów jest zatrzymany
@@ -69,13 +90,26 @@ function frame(time) {
  ? 0
  : Math.min((time - previousTime) / 1000, 0.05);
  previousTime = time;
- if (!paused) updateCars(dt);
- render();
+if (gameState.status === 'playing' && !paused) {
+ updateCars(dt);
+ updateGameState();
+}
+render();
+updateHud();
+
 requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
 window.addEventListener('resize', render);
 window.addEventListener('keydown', event => {
+ // R restartuje grę.
+ if (event.key.toLowerCase() === 'r') {
+  if (!event.repeat) {
+   restartGame();
+   paused = false; // po restarcie gra rusza od razu
+  }
+  return;
+ }
  // Spacja zatrzymuje / wznawia ruch samochodów.
  if (event.code === 'Space') {
   event.preventDefault();
@@ -84,7 +118,7 @@ window.addEventListener('keydown', event => {
  }
  if (!event.key.startsWith('Arrow')) return;
  event.preventDefault();
- if (event.repeat) return;
+ if (event.repeat || gameState.status !== 'playing') return;
  if (paused) return; // podczas pauzy gracz nie może się ruszać
  movePlayer(event.key);
 }); 

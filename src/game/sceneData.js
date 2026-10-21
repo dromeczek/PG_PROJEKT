@@ -12,11 +12,11 @@ export const scene = {
     player: { position: [0.0, 0.0, 1.40] },
     cars: [
         // Pas z = 0.70 - jazda w prawo
-        { position: [-0.45, 0.0, 0.70], color: [0.92, 0.12, 0.13], speed: 0.32 },
-        { position: [0.40, 0.0, 0.70], color: [1, 0, 1], speed: 0.25 },
+        { position: [-1.5, 0.0, 0.70], color: [0.92, 0.12, 0.13], speed: 0.32 },
+        { position: [1.5, 0.0, 0.70], color: [1, 0, 1], speed: 0.30 },
         // Pas z = 0.00 - jazda w lewo
-        { position: [0.48, 0.0, 0.0], color: [0.12, 0.30, 0.90], speed: -0.42 },
-        { position: [-0.50, 0.0, 0.0], color: [0.95, 0.55, 0.10], speed: -0.30 }
+        { position: [1.5, 0.0, 0.0], color: [0.12, 0.30, 0.90], speed: -0.42 },
+        { position: [-1.5, 0.0, 0.0], color: [0.95, 0.55, 0.10], speed: -0.40 }
     ],
     trees: [
         { position: [-0.66, 0.0, 1.40] },
