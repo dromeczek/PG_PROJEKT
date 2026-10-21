@@ -2,7 +2,9 @@
 export const rows = [
     { type: 'grass', z: 0.70 },
     { type: 'road', z: 0.00 },
-    { type: 'grass', z: -0.70 }
+    { type: 'grass', z: -0.70 },
+    
+    { type: 'grass', z: -1.40, color: [0.55, 0.75, 0.20] }
 ];
 
 export const scene = {

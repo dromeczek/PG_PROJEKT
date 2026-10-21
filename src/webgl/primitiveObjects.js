@@ -3,10 +3,11 @@ import { drawMesh } from './renderer.js';
 const GROUND_Y = -0.45;
 
 // Ta sama płaszczyzna przedstawia drogę lub trawę.
+// Opcjonalne pole color nadpisuje domyślny kolor pasa.
 export function drawRow(gl, planeMesh, uniforms, row) {
-    const color = row.type === 'road'
+    const color = row.color ?? (row.type === 'road'
         ? [0.19, 0.19, 0.21]
-        : [0.17, 0.64, 0.25];
+        : [0.17, 0.64, 0.25]);
 
     drawMesh(gl, planeMesh, uniforms, {
         position: [0.0, GROUND_Y, row.z],
