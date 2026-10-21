@@ -14,6 +14,17 @@ export function drawRow(gl, planeMesh, uniforms, row) {
         scale: [1.8, 1.0, 0.65],
         color
     });
+
+    // Przerywana linia między dwoma pasami drogi (krótkie białe paski).
+    if (row.divider) {
+        for (let x = -0.8; x <= 0.8; x += 0.25) {
+            drawMesh(gl, planeMesh, uniforms, {
+                position: [x, GROUND_Y + 0.002, row.z - 0.35],
+                scale: [0.12, 1.0, 0.03],
+                color: [1.0, 1.0, 1.0]
+            });
+        }
+    }
 }
 
 // Gracz: ciało + głowa (2 razy cubeMesh).

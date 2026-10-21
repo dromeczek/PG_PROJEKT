@@ -4,7 +4,8 @@ import {
     createMesh, planeGeometry, cubeGeometry,
     drawRow, drawPlayer, drawCar, drawTree
 } from './webgl/index.js';
-
+import { mat4 } from 'gl-matrix';
+import { updateCars, movePlayer } from './game/gameLogic.js';
 const canvas = document.querySelector('#gameCanvas');
 const gl = canvas.getContext('webgl2');
 if (!gl) throw new Error('Ta przeglądarka nie udostępnia WebGL2.');
@@ -13,12 +14,17 @@ const program = createProgram(gl, vertexShaderSource, fragmentShaderSource);
 gl.useProgram(program);
 
 const uniforms = {
-    position: gl.getUniformLocation(program, 'uPosition'),
-    scale: gl.getUniformLocation(program, 'uScale'),
-    color: gl.getUniformLocation(program, 'uColor'),
-    aspect: gl.getUniformLocation(program, 'uAspect')
+ model: gl.getUniformLocation(program, 'uModel'),
+ view: gl.getUniformLocation(program, 'uView'),
+ projection: gl.getUniformLocation(program, 'uProjection'),
+ color: gl.getUniformLocation(program, 'uColor')
 };
-
+const camera = {
+ eye: [0.0, 1.3, 2.4], // Gdzie stoi kamera? 
+ target: [0.0, -0.15, -0.35], // Na co patrzy?
+ up: [0, 1, 0], // Gdzie jest góra obrazu?
+ zoom: 1.8 // Zakres pokazywanego obszaru
+};
 // Każda geometria trafia do GPU tylko raz.
 const planeMesh = createMesh(gl, program, planeGeometry);
 const cubeMesh = createMesh(gl, program, cubeGeometry);
@@ -40,7 +46,15 @@ function render() {
     gl.clearColor(0.075, 0.10, 0.15, 1);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     gl.useProgram(program);
-    gl.uniform1f(uniforms.aspect, canvas.width / canvas.height);
+    const aspect = canvas.width / canvas.height;
+    const view = mat4.create();
+    mat4.lookAt(view, camera.eye, camera.target, camera.up);
+    const projection = mat4.create();
+    mat4.ortho(projection,
+ -camera.zoom * aspect, camera.zoom * aspect,
+ -camera.zoom, camera.zoom, 0.1, 100);
+    gl.uniformMatrix4fv(uniforms.view, false, view);
+    gl.uniformMatrix4fv(uniforms.projection, false, projection);
 
     for (const row of rows) drawRow(gl, planeMesh, uniforms, row);
     drawPlayer(gl, cubeMesh, uniforms, scene.player);
@@ -48,5 +62,29 @@ function render() {
     for (const tree of scene.trees) drawTree(gl, cubeMesh, uniforms, tree);
 }
 
-render();
+let previousTime = null;
+let paused = false; // czy ruch samochodów jest zatrzymany
+function frame(time) {
+ const dt = previousTime === null
+ ? 0
+ : Math.min((time - previousTime) / 1000, 0.05);
+ previousTime = time;
+ if (!paused) updateCars(dt);
+ render();
+requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
 window.addEventListener('resize', render);
+window.addEventListener('keydown', event => {
+ // Spacja zatrzymuje / wznawia ruch samochodów.
+ if (event.code === 'Space') {
+  event.preventDefault();
+  if (!event.repeat) paused = !paused;
+  return;
+ }
+ if (!event.key.startsWith('Arrow')) return;
+ event.preventDefault();
+ if (event.repeat) return;
+ if (paused) return; // podczas pauzy gracz nie może się ruszać
+ movePlayer(event.key);
+}); 
