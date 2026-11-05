@@ -7,7 +7,7 @@ playerRoot: null,
 cars: [],
 trees: []
 };
-export function createBasicObjects(scene3D) {
+export function createBasicObjects(scene3D, playerTemplate) {
 const rowGeometry = new THREE.BoxGeometry(1.8, 0.04, 0.65);
 for (const row of rows) {
 const color = row.type === 'road' ? 0x30323a : 0x2ba344;
@@ -19,19 +19,13 @@ rowMesh.position.set(0, GROUND_Y - 0.02, row.z);
 scene3D.add(rowMesh);
 }
 const playerRoot = new THREE.Group();
-const yellow = new THREE.MeshBasicMaterial({ color: 0xffbf20 });
-const body = new THREE.Mesh(
-new THREE.BoxGeometry(0.18, 0.24, 0.18), yellow
-);
-const head = new THREE.Mesh(
-new THREE.BoxGeometry(0.13, 0.13, 0.13), yellow
-);
-body.position.y = 0.12;
-head.position.y = 0.30;
-playerRoot.add(body, head);
+const playerModel = makeInstance(playerTemplate, 0.35);
+playerModel.rotation.y = Math.PI; 
+playerRoot.add(playerModel);
 scene3D.add(playerRoot);
 objects.playerRoot = playerRoot;
 }
+
 export function addModels(scene3D, carTemplate, treeTemplate) {
 for (const car of gameScene.cars) {
 const root = makeInstance(carTemplate, 0.40);

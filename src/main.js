@@ -17,18 +17,12 @@ const canvas = document.querySelector('#gameCanvas');
 
 const scene3D = new THREE.Scene();
 scene3D.background = new THREE.Color(0x141b26);
-createBasicObjects(scene3D);
 const renderer3D = new THREE.WebGLRenderer({ canvas, antialias: true });
 renderer3D.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
 
 const camera3D = new THREE.OrthographicCamera(-3, 3, 2.2, -2.2, 0.1, 100);
 camera3D.position.set(0, 2.4, 3.2);
 camera3D.lookAt(0, -0.2, -0.35);
-
-const testBox = new THREE.Mesh(
- new THREE.BoxGeometry(0.25, 0.25, 0.25),
- new THREE.MeshBasicMaterial({ color: 0xffbf20 })
-);
 
 scene3D.add(new THREE.AmbientLight(0xffffff, 1.5));
 const light = new THREE.DirectionalLight(0xffffff, 2.0);
@@ -79,19 +73,18 @@ updateHud();
 
 requestAnimationFrame(frame);
 }
-const carTemplate = await loadTemplate('/models/car.glb');
-const previewCar = makeInstance(carTemplate, 0.40);
-previewCar.position.set(0, -0.45, 0);
-scene3D.add(previewCar);
-scene3D.remove(testBox);
-const treeTemplate = await loadTemplate('/models/tree.glb');
-const previewTree = makeInstance(treeTemplate, 0.70);
-previewCar.position.x = -0.45;
-previewTree.position.set(0.45, -0.45, 0);
-scene3D.remove(previewCar, previewTree);
+// 1. Wczytanie wszystkich modeli naraz
+const [carTemplate, treeTemplate, elephantTemplate] = await Promise.all([
+  loadTemplate('/models/car.glb'),
+  loadTemplate('/models/tree.glb'),
+  loadTemplate('/models/elephant.glb'),
+]);
+
+// 2. Budowa sceny
+createBasicObjects(scene3D, elephantTemplate);
 addModels(scene3D, carTemplate, treeTemplate);
 
-scene3D.add(previewTree);
+// 3. Start gry
 requestAnimationFrame(frame);
 window.addEventListener('resize', render);
 window.addEventListener('keydown', event => {
